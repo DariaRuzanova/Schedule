@@ -1,8 +1,19 @@
 package org.example;
 
+import java.util.Comparator;
+
 public class Operation  {
     int idOperation;
     String operation;
+
+    public int getIdOperation() {
+        return idOperation;
+    }
+
+    public String getModelEquipment() {
+        return modelEquipment;
+    }
+
     String precedingOperation;
     int durationOperation;
     int profitOperation;
@@ -17,5 +28,16 @@ public class Operation  {
         this.modelEquipment = modelEquipment;
     }
 
+    @Override
+    public String toString() {
+        return "Operation{" +
+                "idOperation=" + idOperation +
+                ", operation='" + operation + '\'' +
+                ", precedingOperation='" + precedingOperation + '\'' +
+                ", durationOperation=" + durationOperation +
+                ", profitOperation=" + profitOperation +
+                ", modelEquipment='" + modelEquipment + '\'' +
+                '}';
+    }
 
 }

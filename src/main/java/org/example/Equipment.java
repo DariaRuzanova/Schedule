@@ -8,4 +8,8 @@ public class Equipment {
         this.idEquipment = idEquipment;
         this.modelEquipment = modelEquipment;
     }
+
+    public int getIdEquipment() {
+        return idEquipment;
+    }
 }

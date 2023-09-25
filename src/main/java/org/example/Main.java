@@ -1,6 +1,7 @@
 package org.example;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Main {
     public static void main(String[] args) {
@@ -38,22 +39,45 @@ public class Main {
         List<Employee> employeeList = Arrays.asList(emp1, emp2, emp3, emp4, emp5);//лист работников
 
         Collections.sort(listOperation,new PrecedingOperationComparator());
-        System.out.println(listOperation);
-        int t =0;
 
-        Map<Integer, Boolean> availabilityEquipment = new HashMap<>();
+        Map<Integer, Boolean> availabilityEquipmentMap = new HashMap<>();
         for (int i = 0; i < listEquipment.size(); i++) {
             int key = listEquipment.get(i).idEquipment;
-            availabilityEquipment.put(key,true);
+            availabilityEquipmentMap.put(key,true);
         }
-        Map<Integer,Boolean> availabilityEmployee = new HashMap<>();
+        Map<Integer,Boolean> availabilityEmployeeMap = new HashMap<>();
         for (int j = 0; j < employeeList.size(); j++) {
             int key = employeeList.get(j).idEmployee;
-            availabilityEmployee.put(key,true);
+            availabilityEmployeeMap.put(key,true);
+        }
+        Map<Integer,PerformOperation>resultMap = null;
+        List<Operation>listRest = listOperation;
+        while(!listRest.isEmpty()){
+            for (int i = 0; i < listRest.size(); i++) {
+                String modelEquipment = listRest.get(i).getModelEquipment();
+                int idEquipment = FindIdEquipment(listEquipment,modelEquipment);
+                if(availabilityEquipmentMap.get(idEquipment)){
+                    PerformOperation performOperation = new PerformOperation(
+
+                    )
+                    resultMap.put(idEquipment,)
+                }
+
+            }
         }
 
 
 
 
     }
+    public static int FindIdEquipment(List<Equipment> equipmentList,String modelEquip) {
+        List<Equipment> list = equipmentList.stream().filter(x -> x.modelEquipment.equals(modelEquip))
+                .collect(Collectors.toList());
+        int id = 0;
+        if (list.size() == 1) {
+            id = list.get(0).getIdEquipment();
+        }
+        return id;
+    }
+
 }
