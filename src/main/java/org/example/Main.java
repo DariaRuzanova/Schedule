@@ -54,12 +54,12 @@ public class Main {
         List<Operation>listRest = listOperation;
         while(!listRest.isEmpty()){
             for (int i = 0; i < listRest.size(); i++) {
-                String modelEquipment = listRest.get(i).getModelEquipment();
-                int idEquipment = FindIdEquipment(listEquipment,modelEquipment);
-                if(availabilityEquipmentMap.get(idEquipment)){
-                    PerformOperation performOperation = new PerformOperation(
+                Operation operation = listOperation.get(i);
+                String modelEquipment = operation.getModelEquipment();
 
-                    )
+                if(checkAvailableEquipment(availabilityEquipmentMap,listEquipment,modelEquipment)&&
+                checkAvailableEmployee(availabilityEmployeeMap,employeeList,modelEquipment)){
+                    PerformOperation performOperation = new PerformOperation(operation.getIdOperation(), )
                     resultMap.put(idEquipment,)
                 }
 
@@ -70,14 +70,46 @@ public class Main {
 
 
     }
+
+    private static boolean checkAvailableEmployee(Map<Integer, Boolean> availabilityEmployeeMap,
+                                                  List<Employee> employeeList,
+                                                  String modelEquipment) {
+
+    }
+
+    public static boolean checkAvailableEquipment(Map<Integer, Boolean> availabilityEquipmentMap,
+                                                  List<Equipment> equipmentList,
+                                                  String modelEquip){
+        int idEquipment = FindIdEquipment(equipmentList,modelEquip);
+
+        if(availabilityEquipmentMap.get(idEquipment)){
+            availabilityEquipmentMap.put(idEquipment,false);
+            return true;
+        }
+        return false;
+
+    }
     public static int FindIdEquipment(List<Equipment> equipmentList,String modelEquip) {
-        List<Equipment> list = equipmentList.stream().filter(x -> x.modelEquipment.equals(modelEquip))
-                .collect(Collectors.toList());
+        List<Equipment> list = equipmentList.stream().filter(x -> x.modelEquipment.equals(modelEquip)).toList();
         int id = 0;
         if (list.size() == 1) {
             id = list.get(0).getIdEquipment();
         }
         return id;
+    }
+    public static List<Employee>listEmployers(List<Employee> employeeList,String modelEquipment){
+        List<Employee>listEmployersResult = null;
+        for (Employee emp: employeeList) {
+            List<Equipment>listEquipmentsEmployee = emp.getEquipmentList();
+            for (Equipment i:listEquipmentsEmployee) {
+                if(i.getModelEquipment().equals(modelEquipment)){
+                    listEmployersResult.add(emp);
+                }
+
+            }
+
+        }
+        return listEmployersResult;
     }
 
 }

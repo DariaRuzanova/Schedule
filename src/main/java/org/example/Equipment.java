@@ -12,4 +12,8 @@ public class Equipment {
     public int getIdEquipment() {
         return idEquipment;
     }
+
+    public String getModelEquipment() {
+        return modelEquipment;
+    }
 }
