@@ -20,4 +20,8 @@ public class Employee {
     public List<Equipment> getEquipmentList() {
         return equipmentList;
     }
+
+    public int getIdEmployee() {
+        return idEmployee;
+    }
 }

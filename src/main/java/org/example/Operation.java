@@ -6,14 +6,6 @@ public class Operation  {
     int idOperation;
     String operation;
 
-    public int getIdOperation() {
-        return idOperation;
-    }
-
-    public String getModelEquipment() {
-        return modelEquipment;
-    }
-
     String precedingOperation;
     int durationOperation;
     int profitOperation;
@@ -26,6 +18,25 @@ public class Operation  {
         this.durationOperation = durationOperation;
         this.profitOperation = profitOperation;
         this.modelEquipment = modelEquipment;
+    }
+    public int getIdOperation() {
+        return idOperation;
+    }
+
+    public String getModelEquipment() {
+        return modelEquipment;
+    }
+
+    public String getOperation() {
+        return operation;
+    }
+
+    public int getDurationOperation() {
+        return durationOperation;
+    }
+
+    public int getProfitOperation() {
+        return profitOperation;
     }
 
     @Override
