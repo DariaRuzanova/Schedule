@@ -1,5 +1,6 @@
 package org.example.calculator;
 
+import org.example.ResultSchedule;
 import org.example.model.Employee;
 import org.example.model.Equipment;
 import org.example.model.Operation;
@@ -12,84 +13,83 @@ public class Calculator {
     private SessionData data;
     private long currentTime;
     private List<Operation> orderedOperations;
-    private Set<Integer> availabilityEquipment;
-    private Set<Integer> availabilityEmployee;
-    //    private List<Operation> operationsPerformed = new ArrayList<>();
-    private Map<Integer, PerformedOperationEntity> performedOperations = new HashMap<>();
+    private final Map<Integer, Integer> availabilityEquipment = new HashMap<>();
+    private final Map<Integer, Integer> availabilityEmployee = new HashMap<>();
+    private final List<RunningOperationEntity> runningOperations = new ArrayList<>();
+    private final List<ResultSchedule> orderExecution = new ArrayList<>();
 
     public void calculate(SessionData data) {
         this.data = data;
 
-        orderedOperations = data.getOperations().entrySet().stream().map(x -> x.getValue()).collect(Collectors.toList());
+        orderedOperations = new ArrayList<>(data.getOperations().values());
         orderedOperations.sort(new ProfitOperationComparator());
 
-        availabilityEquipment = data.getEquipments().keySet();
-        availabilityEmployee = data.getEmployees().keySet();
+        data.getEquipments().keySet().forEach(x -> availabilityEquipment.put(x, x));
+        data.getEmployees().keySet().forEach(x -> availabilityEmployee.put(x, x));
 
         currentTime = 0;
-        while (!orderedOperations.isEmpty()) {
-            startOperations(orderedOperations, availabilityEquipment, availabilityEmployee);
-            waitCompletion(performedOperations,availabilityEquipment,availabilityEmployee);
+        while (startOperations()) {
+            waitCompletion();
         }
     }
 
-    private void startOperations(List<Operation> orderedOperations, Set<Integer> availabilityEquipment, Set<Integer> availabilityEmployee) {
+    private boolean startOperations() {
         for (int i = 0; i < orderedOperations.size(); i++) {
-            int equipmentModelId = orderedOperations.get(i).getEquipmentModelId();
-            int professionId = orderedOperations.get(i).getProfessionId();
+            Operation operation = orderedOperations.get(i);
+            int equipmentModelId = operation.getEquipmentModelId();
+            int professionId = operation.getProfessionId();
 
-            List<Employee> listEmployees = new ArrayList<>(data.getEmployees().values());
-            listEmployees = listEmployees.stream()
-                    .filter(x -> x.getProfessionId() == professionId && x.getEquipmentModelIds().contains(equipmentModelId))
-                    .collect(Collectors.toList());
-            List<Equipment> listEquipment = new ArrayList<>(data.getEquipments().values());
-            List<Equipment> listEquipmentByModelId = listEquipment.stream()
-                    .filter(x -> x.getEquipmentModelId() == equipmentModelId)
-                    .collect(Collectors.toList());
-            int equipmentIdForOperation = 0;
-            int employeeIdForOperation = 0;
-            for (Equipment equipment : listEquipmentByModelId) {
-                if (availabilityEquipment.contains(equipment.getId())) {
-                    equipmentIdForOperation = equipment.getId();
-                    break;
-                }
-            }
+            Optional<Employee> employeeForOperation = data.getEmployees().values().stream()
+                    .filter(x->availabilityEmployee.containsKey(x.getId())
+                            && x.getProfessionId() == professionId
+                            && x.getEquipmentModelIds().contains(equipmentModelId))
+                    .findFirst();
 
-            for (Employee employee : listEmployees) {
-                if (availabilityEmployee.contains(employee.getId())) {
-                    employeeIdForOperation = employee.getId();
-                    break;
-                }
-            }
-            if(availabilityEquipment.contains(equipmentIdForOperation)&&availabilityEmployee.contains(employeeIdForOperation)){
-                availabilityEmployee.remove(employeeIdForOperation);
-                availabilityEquipment.remove(equipmentIdForOperation);
-                Operation operation = orderedOperations.get(i);
-//            operationsPerformed.add(operation);
+            Optional<Equipment> equipmentForOperation =  data.getEquipments().values().stream()
+                    .filter(x -> availabilityEquipment.containsKey(x.getId())
+                            && x.getEquipmentModelId() == equipmentModelId)
+                    .findFirst();
 
-                PerformedOperationEntity performedOperationEntity =
-                        new PerformedOperationEntity(operation.getId(), employeeIdForOperation, equipmentIdForOperation,
-                                operation.getDuration(), operation.getProfit());
+            boolean isChain = orderedOperations.stream().noneMatch(x->x.getId() == operation.getPrecedingOperationId());
 
-                performedOperations.put(performedOperationEntity.getDurationOperationRest(), performedOperationEntity);
+            if (employeeForOperation.isPresent()
+                    && equipmentForOperation.isPresent()
+                    && isChain) {
+                availabilityEmployee.remove(employeeForOperation.get().getId());
+                availabilityEquipment.remove(equipmentForOperation.get().getId());
+                orderedOperations.remove(operation);
+
+                RunningOperationEntity performedOperationEntity =
+                        new RunningOperationEntity(operation.getId(),
+                                employeeForOperation.get().getId(),
+                                equipmentForOperation.get().getId(),
+                                operation.getDuration(),
+                                operation.getProfit());
+                runningOperations.add(performedOperationEntity);
+
+                orderExecution.add(new ResultSchedule(currentTime,
+                        operation.getDuration(),
+                        operation.getId(),
+                        employeeForOperation.get().getId(),
+                        equipmentForOperation.get().getId()));
             }
         }
+        return !runningOperations.isEmpty();
     }
 
-    private void waitCompletion(Map<Integer, PerformedOperationEntity> performedOperations,
-                                Set<Integer> availabilityEquipment,
-                                Set<Integer> availabilityEmployee) {
-        Optional<Integer> minTime = performedOperations.keySet().stream().min(Comparator.naturalOrder());
-        currentTime += minTime.get();
-        PerformedOperationEntity finishedOperation = performedOperations.get(minTime.get());
-        int equipmentFinishedId = finishedOperation.getIdEquipment();
-        int employeeFinishedId = finishedOperation.getIdEmployee();
-
-
-        availabilityEquipment.add(equipmentFinishedId);
-        availabilityEmployee.add(employeeFinishedId);
-
-
+    private void waitCompletion() {
+        Optional<RunningOperationEntity> minTime = runningOperations.stream().min(Comparator.comparing(RunningOperationEntity::getDurationOperationRest));
+        if (minTime.isPresent()) {
+            currentTime += minTime.get().durationOperationRest;
+            runningOperations.forEach(x->x.durationOperationRest = x.durationOperationRest - minTime.get().durationOperationRest);
+            List<RunningOperationEntity> closedOperations = runningOperations.stream().filter(x->x.durationOperationRest <= 0).collect(Collectors.toList());
+            for(RunningOperationEntity closedOperation : closedOperations) {
+                availabilityEmployee.put(closedOperation.idEmployee, closedOperation.idEmployee);
+                availabilityEquipment.put(closedOperation.idEquipment, closedOperation.idEquipment);
+            }
+            runningOperations.removeAll(closedOperations);
+            closedOperations.clear();
+        }
     }
 
 }
