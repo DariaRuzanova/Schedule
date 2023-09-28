@@ -4,15 +4,13 @@ import org.example.ResultOperation;
 import org.example.ResultSchedule;
 import org.example.model.*;
 
-import java.security.Timestamp;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class Calculator {
     private SessionData data;
-    private Period period;
-    private Strategy strategy;
+
     private long currentTime;
     private List<Operation> orderedOperations;
     private final Map<Integer, Integer> availabilityEquipment = new HashMap<>();
@@ -35,6 +33,9 @@ public class Calculator {
             waitCompletion();
         }
 
+        defineTimes();
+        System.out.println();
+        schedule.forEach(System.out::println);
     }
 
 
@@ -58,11 +59,11 @@ public class Calculator {
                             && x.getEquipmentModelId() == equipmentModelId)
                     .findFirst();
 
-//            boolean isChain = orderedOperations.stream().noneMatch(x->x.getId() == operation.getPrecedingOperationId());
+            boolean isChain = orderedOperations.stream().noneMatch(x -> ((Integer) x.getId()).equals(operation.getPrecedingOperationId()));
 
             if (employeeForOperation.isPresent()
                     && equipmentForOperation.isPresent()
-//                    && isChain
+                    && isChain
             ) {
                 availabilityEmployee.remove(employeeForOperation.get().getId());
                 availabilityEquipment.remove(equipmentForOperation.get().getId());
@@ -81,11 +82,8 @@ public class Calculator {
                         operation.getId(),
                         employeeForOperation.get().getId(),
                         equipmentForOperation.get().getId()));
-
             }
-
         }
-
         return !runningOperations.isEmpty();
     }
 
@@ -100,21 +98,29 @@ public class Calculator {
                 availabilityEquipment.put(closedOperation.idEquipment, closedOperation.idEquipment);
             }
             runningOperations.removeAll(closedOperations);
-
-            switch (strategy) {
-                case AS_SOON_AS_POSSIBLE:
-                    Instant startTime = period.getStartDate();
-                    for (int i = 0; i < closedOperations.size(); i++) {
-                        Instant timeOperation = Instant.ofEpochSecond(closedOperations.get(i).durationOperationRest * 60);
-                        Instant endTimeOperation = period.getStartDate().plusSeconds(timeOperation);
-                        closedOperations.clear();
-                    }
-            }
-
-
         }
+    }
 
-
+    private void defineTimes() {
+        Period period = data.getPeriod();
+        Instant startTimeNew;
+        switch (data.getStrategy()) {
+            case AS_SOON_AS_POSSIBLE:
+                startTimeNew = period.getStartDate();
+                break;
+            case JUST_IN_TIME:
+                Instant endTime = period.getEndDate();
+                Optional<Long> maxTime = orderExecution.stream().map(x -> x.getDuration() + x.getTime()).max(Comparator.comparingLong(x -> x));
+                startTimeNew = endTime.minusSeconds(maxTime.get() * 60);
+                break;
+            default:
+                startTimeNew = Instant.now();
+        }
+        for (ResultOperation operation : orderExecution) {
+            Instant startOperation = startTimeNew.plusSeconds(operation.getTime() * 60);
+            ResultSchedule resultScheduleOperation = new ResultSchedule(startOperation, operation);
+            schedule.add(resultScheduleOperation);
+        }
     }
 }
 

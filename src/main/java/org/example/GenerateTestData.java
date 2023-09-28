@@ -16,6 +16,7 @@ public class GenerateTestData {
         fillEmployee(result);
         fillOperation(result);
         fillPeriod(result);
+        result.setStrategy(Strategy.AS_SOON_AS_POSSIBLE);
 
         return result;
     }
