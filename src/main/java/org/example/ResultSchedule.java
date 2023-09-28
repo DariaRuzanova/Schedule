@@ -1,14 +1,11 @@
 package org.example;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.time.Instant;
+
 @Data
-@AllArgsConstructor
 public class ResultSchedule {
-    private long start;
-    private int duration;
-    private int idOperation;
-    private int idEmployee;
-    private int idEquipment;
+    Instant startOperation;
+    ResultOperation resultOperation;
 }

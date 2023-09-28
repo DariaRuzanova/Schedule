@@ -3,6 +3,7 @@ package org.example;
 import org.example.model.*;
 
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 
@@ -14,7 +15,16 @@ public class GenerateTestData {
         fillProfession(result);
         fillEmployee(result);
         fillOperation(result);
+        fillPeriod(result);
+
         return result;
+    }
+
+    private static void fillPeriod(SessionData data){
+        Instant startTime = Instant.parse("2023-07-11T08:00:30Z");
+        Instant endTime = Instant.parse("2023-10-11T08:00:30Z");
+        data.getPeriod().setStartDate(startTime);
+        data.getPeriod().setEndDate(endTime);
     }
 
     private static void fillEquipmentModels(SessionData data){
