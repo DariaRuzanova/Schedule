@@ -2,12 +2,11 @@ package org.example;
 
 import org.example.model.*;
 
-import java.io.Serializable;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 
-public class GenerateTestData {
+public class TestDataGenerator {
     public static SessionData generate(){
         SessionData result = new SessionData();
         fillEquipmentModels(result);
@@ -82,13 +81,13 @@ public class GenerateTestData {
         Operation G = new Operation(7,"G",3,1,1,10,10);
         Operation H = new Operation(8,"H",null,2,2,30,120);
 
-        data.getOperations().put(1,A);
-        data.getOperations().put(2,B);
-        data.getOperations().put(3,C);
-        data.getOperations().put(4,D);
-        data.getOperations().put(5,E);
-        data.getOperations().put(6,F);
-        data.getOperations().put(7,G);
-        data.getOperations().put(8,H);
+        data.getOperations().put(A.getId(),A);
+        data.getOperations().put(B.getId(), B);
+        data.getOperations().put(C.getId(),C);
+        data.getOperations().put(D.getId(), D);
+        data.getOperations().put(E.getId(), E);
+        data.getOperations().put(F.getId(), F);
+        data.getOperations().put(G.getId(), G);
+        data.getOperations().put(H.getId(), H);
     }
 }

@@ -1,7 +1,7 @@
 package org.example.calculator;
 
-import org.example.ResultOperation;
-import org.example.ResultSchedule;
+import org.example.model.ResultOperation;
+import org.example.model.ResultSchedule;
 import org.example.model.*;
 
 import java.time.Instant;
