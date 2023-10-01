@@ -7,7 +7,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @Getter
 @ToString
-public class Operation  {
+public class Operation {
     private int id;
     private String name;
     private Integer precedingOperationId;

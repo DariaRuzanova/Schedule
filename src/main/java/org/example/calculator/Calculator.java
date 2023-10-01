@@ -3,10 +3,8 @@ package org.example.calculator;
 import org.example.model.ResultOperation;
 import org.example.model.ResultSchedule;
 import org.example.model.*;
-
 import java.time.Instant;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Calculator {
     private SessionData data;
@@ -19,7 +17,7 @@ public class Calculator {
     private final List<ResultOperation> orderExecution = new ArrayList<>();
     private final List<ResultSchedule> schedule = new ArrayList<>();
 
-    public void calculate(SessionData data) {
+    public List<ResultSchedule> calculate(SessionData data) {
         this.data = data;
 
         orderedOperations = new ArrayList<>(data.getOperations().values());
@@ -34,17 +32,13 @@ public class Calculator {
         }
 
         defineTimes();
-        System.out.println();
-        schedule.forEach(System.out::println);
+
+        return schedule;
     }
-
-
     private boolean startOperations() {
         List<Operation> restOrderedOperation = new ArrayList<>(orderedOperations);
 
         for (Operation operation : restOrderedOperation) {
-
-//            Operation operation = orderedOperations.get(i);
             int equipmentModelId = operation.getEquipmentModelId();
             int professionId = operation.getProfessionId();
 
@@ -86,13 +80,12 @@ public class Calculator {
         }
         return !runningOperations.isEmpty();
     }
-
     private void waitCompletion() {
         Optional<RunningOperationEntity> minTime = runningOperations.stream().min(Comparator.comparing(RunningOperationEntity::getDurationOperationRest));
         if (minTime.isPresent()) {
             currentTime += minTime.get().durationOperationRest;
             runningOperations.forEach(x -> x.durationOperationRest = x.durationOperationRest - minTime.get().durationOperationRest);
-            List<RunningOperationEntity> closedOperations = runningOperations.stream().filter(x -> x.durationOperationRest <= 0).collect(Collectors.toList());
+            List<RunningOperationEntity> closedOperations = runningOperations.stream().filter(x -> x.durationOperationRest <= 0).toList();
             for (RunningOperationEntity closedOperation : closedOperations) {
                 availabilityEmployee.put(closedOperation.idEmployee, closedOperation.idEmployee);
                 availabilityEquipment.put(closedOperation.idEquipment, closedOperation.idEquipment);
@@ -100,7 +93,6 @@ public class Calculator {
             runningOperations.removeAll(closedOperations);
         }
     }
-
     private void defineTimes() {
         Period period = data.getPeriod();
         Instant startTimeNew;

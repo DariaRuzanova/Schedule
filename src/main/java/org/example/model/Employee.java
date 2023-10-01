@@ -2,8 +2,6 @@ package org.example.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.example.model.EquipmentModel;
-
 import java.util.List;
 
 @AllArgsConstructor
